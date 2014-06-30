@@ -16,12 +16,16 @@ module VagrantPlugins
         end
 
         def call(env)
-          server_name = env[:machine].name
-          server_name ||= env[:machine].provider_config.server_name
+#          server_name = env[:machine].name
+#          server_name ||= env[:machine].provider_config.server_name
+          server_name = env[:machine].provider_config.server_name
+          server_name ||= env[:machine].name
+
           server_plan = env[:machine].provider_config.server_plan
           disk_plan = env[:machine].provider_config.disk_plan
           disk_source_archive = env[:machine].provider_config.disk_source_archive
           sshkey_id = env[:machine].provider_config.sshkey_id
+          login_password = env[:machine].provider_config.login_password
 
           env[:ui].info(I18n.t("vagrant_sakura.creating_instance"))
           env[:ui].info(" -- Server Name: #{server_name}")
@@ -74,9 +78,10 @@ module VagrantPlugins
               "ServerPlan" => { "ID" => server_plan },
               "ConnectedSwitches" => [
                 { "Scope" => "shared", "BandWidthMbps" => 100 }
-              ]
+              ],
             }
           }
+
           response = api.post("/server", data)
           unless response["Server"]["ID"]
             raise 'no Server ID returned'
@@ -96,10 +101,12 @@ module VagrantPlugins
             "UserSubnet" => {}
           }
           if sshkey_id
-            data["SSHKey"] = { "ID" => sshkey_id }
+#           data["SSHKey"] = { "ID" => sshkey_id }
+            data["SSHKey"] = { "ID" => sshkey_id, "Password" => env[:machine].provider_config.login_password }
           else
             path = env[:machine].ssh_info[:private_key_path] + '.pub'
-            data["SSHKey"] = { "PublicKey" => File.read(path) }
+#            data["SSHKey"] = { "PublicKey" => File.read(path) }
+            data["SSHKey"] = { "PublicKey" => File.read(path), "Password" => env[:machine].provider_config.login_password }
           end
           response = api.put("/disk/#{diskid}/config", data)
           # Config

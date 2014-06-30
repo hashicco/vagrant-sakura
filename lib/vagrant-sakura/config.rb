@@ -46,6 +46,9 @@ module VagrantPlugins
       # The ID of the zone.
       attr_accessor :zone_id
 
+      # sakura cloud login login_password
+      attr_accessor :login_password
+
       def initialize
         @access_token        = UNSET_VALUE
         @access_token_secret = UNSET_VALUE
@@ -56,6 +59,7 @@ module VagrantPlugins
         @server_plan         = UNSET_VALUE
         @sshkey_id           = UNSET_VALUE
         @zone_id             = UNSET_VALUE
+        @login_password      = UNSET_VALUE
       end
 
       def finalize!
@@ -94,6 +98,11 @@ module VagrantPlugins
         if @zone_id == UNSET_VALUE
           @zone_id = "is1a"  # the first zone
         end
+
+        if @login_password == UNSET_VALUE
+          @login_password = nil
+        end
+
       end
 
       def validate(machine)
